@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEMbit Racers | 賽車編程創新挑戰</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        stemblue: {
+                            900: '#0A1929',
+                            800: '#0D2137',
+                            700: '#102845'
+                        },
+                        neongreen: {
+                            400: '#39FF14',
+                            500: '#00FF41'
+                        },
+                        metalgray: {
+                            400: '#A9A9A9',
+                            500: '#808080',
+                            600: '#696969'
+                        }
+                    }
+                }
+            }
+        }
+
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .glow {
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.7);
+        }
+
+        .racing-stripe {
+            position: relative;
+        }
+
+        .racing-stripe::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, #39FF14, transparent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .micro-bit-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 4px;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+
+        .micro-bit-led {
+            background-color: #333;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .micro-bit-led.active {
+            background-color: #39FF14;
+        }
+
+        .page-content {
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .page-content.hidden {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-stemblue-900 text-gray-800 dark:text-gray-200 min-h-screen">
+    <header class="fixed w-full top-0 z-50 bg-white dark:bg-stemblue-800 shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="orbitron text-2xl font-bold text-stemblue-900 dark:text-white">
+                    <span class="text-neongreen-400">STEM</span>bit Racers
+                </h1>
+            </div>
+
+            <nav class="hidden md:flex space-x-6">
+                <a href="#" onclick="showPage('page1')" class="hover:text-neongreen-400 transition-colors">首頁</a>
+                <a href="#" onclick="showPage('page2')" class="hover:text-neongreen-400 transition-colors">設計挑戰</a>
+                <a href="#about" class="hover:text-neongreen-400 transition-colors page1-only">關於我們</a>
+                <a href="#micro-x" class="hover:text-neongreen-400 transition-colors page1-only">Micro-X賽車</a>
+            </nav>
+
+            <button id="mobileMenuButton" class="md:hidden text-gray-800 dark:text-white">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <div id="mobileMenu" class="md:hidden hidden bg-white dark:bg-stemblue-800 shadow-md">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#" onclick="showPage('page1')" class="py-2 hover:text-neongreen-400 transition-colors">首頁</a>
+                <a href="#" onclick="showPage('page2')" class="py-2 hover:text-neongreen-400 transition-colors">設計挑戰</a>
+                <a href="#about" class="py-2 hover:text-neongreen-400 transition-colors page1-only">關於我們</a>
+                <a href="#micro-x" class="py-2 hover:text-neongreen-400 transition-colors page1-only">Micro-X賽車</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 pt-24 pb-12">
+        <!-- Page 1 Content -->
+        <div id="page1" class="page-content">
+            <!-- Hero Section -->
+            <section class="flex flex-col md:flex-row items-center justify-between py-12 gap-8">
+                <div class="md:w-1/2">
+                    <h2 class="orbitron text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-stemblue-900 dark:text-white">
+                        STEMbit Racers <br>
+                        <span class="text-neongreen-400 glow">實習挑戰</span>
+                    </h2>
+                    <p class="text-xl mb-6">用 Canva 設計未來感賽車 IG 貼文！結合程式編程與極速賽車的創新體驗。</p>
+                    <div class="flex space-x-4">
+                        <button onclick="showPage('page2')" class="px-6 py-3 bg-neongreen-400 text-stemblue-900 font-bold rounded-md hover:bg-neongreen-500 transition-colors shadow-lg">
+                            開始挑戰
+                        </button>
+                        <a href="#micro-x" class="px-6 py-3 border-2 border-neongreen-400 text-neongreen-400 font-bold rounded-md hover:bg-neongreen-400 hover:bg-opacity-10 transition-colors">
+                            了解 Micro-X
+                        </a>
+                    </div>
+                </div>
+                <div class="md:w-1/2 racing-stripe pl-6">
+                    <div class="bg-stemblue-800 rounded-xl p-6 shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                        <div class="w-full h-64 bg-metalgray-600 rounded-lg overflow-hidden relative">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="orbitron text-neongreen-400 text-2xl font-bold">MICRO-X 賽車模型</div>
+                            </div>
+                            <div class="absolute bottom-4 right-4 bg-black bg-opacity-70 p-3 rounded-lg">
+                                <div class="micro-bit-grid" id="microbitGrid"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <p class="text-neongreen-400 orbitron">寫程式，飆極速！</p>
+                            <p class="text-white text-sm">#CodingMeetsRacing</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Section -->
+            <section id="about" class="py-12 border-t border-gray-200 dark:border-stemblue-700">
+                <h2 class="orbitron text-3xl font-bold mb-8 text-center text-stemblue-900 dark:text-white">關於 <span class="text-neongreen-400">STEMbit Racers</span></h2>
+                <div class="bg-gray-100 dark:bg-stemblue-800 rounded-xl p-6 shadow-lg">
+                    <p class="mb-4">STEMbit Racers 是一家結合 STEM 教育、Micro:bit 編程與高性能賽車的創新公司。我們致力於將科技教育與賽車運動結合，創造出既有趣又有教育意義的產品。</p>
+                    <p class="mb-4">我們的使命是通過編程與賽車的融合，激發年輕人對科技與工程的熱情，培養未來的創新者和問題解決者。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                        <div class="bg-white dark:bg-stemblue-700 p-4 rounded-lg shadow-md">
+                            <div class="text-neongreen-400 text-4xl mb-3">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h3 class="orbitron font-bold mb-2">STEM 教育</h3>
+                            <p class="text-sm">將科學、技術、工程和數學融入賽車設計與操控中，打造全方位學習體驗。</p>
+                        </div>
+                        <div class="bg-white dark:bg-stemblue-700 p-4 rounded-lg shadow-md">
+                            <div class="text-neongreen-400 text-4xl mb-3">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <h3 class="orbitron font-bold mb-2">Micro:bit 編程</h3>
+                            <p class="text-sm">使用簡單易學的 Micro:bit 平台，讓每個人都能輕鬆學習控制和優化賽車性能。</p>
+                        </div>
+                        <div class="bg-white dark:bg-stemblue-700 p-4 rounded-lg shadow-md">
+                            <div class="text-neongreen-400 text-4xl mb-3">
+                                <i class="fas fa-flag-checkered"></i>
+                            </div>
+                            <h3 class="orbitron font-bold mb-2">高性能賽車</h3>
+                            <p class="text-sm">精心設計的賽車模型，結合先進技術與空氣動力學，帶來極致的速度體驗。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Micro-X Section -->
+            <section id="micro-x" class="py-12 border-t border-gray-200 dark:border-stemblue-700">
+                <h2 class="orbitron text-3xl font-bold mb-8 text-center text-stemblue-900 dark:text-white">
+                    <span class="text-neongreen-400">Micro-X</span> 智慧賽車
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-gray-100 dark:bg-stemblue-800 rounded-xl p-6 shadow-lg">
+                        <h3 class="orbitron text-xl font-bold mb-4">產品特點</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="text-neongreen-400 text-xl mt-1 mr-3">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Micro:bit 即時編程控制</h4>
+                                    <p class="text-sm">透過簡單的程式碼，自訂 AI 駕駛模式、調整賽車性能，實現個性化駕駛體驗。</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="text-neongreen-400 text-xl mt-1 mr-3">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">STEM 數據監測</h4>
+                                    <p class="text-sm">即時監測速度、能耗、G力等關鍵數據，進行科學分析和優化。</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="text-neongreen-400 text-xl mt-1 mr-3">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">模組化設計</h4>
+                                    <p class="text-sm">可自由升級感測器與動力系統，根據不同賽道和比賽需求進行客製化調整。</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-stemblue-800 rounded-xl p-6 shadow-lg relative overflow-hidden">
+                        <div class="absolute -right-20 -top-20 w-40 h-40 rounded-full bg-neongreen-400 opacity-20 blur-xl"></div>
+                        <div class="absolute -left-20 -bottom-20 w-40 h-40 rounded-full bg-neongreen-400 opacity-20 blur-xl"></div>
+                        <div class="relative z-10">
+                            <div class="bg-stemblue-900 rounded-lg p-4 mb-4">
+                                <h3 class="orbitron text-xl font-bold mb-2 text-white">程式碼示例</h3>
+                                <div class="bg-black bg-opacity-50 p-3 rounded text-neongreen-400 font-mono text-sm">
+                                    <pre>// 啟動 Micro-X 賽車
+let speed = 0
+let maxSpeed = 100
+
+basic.forever(function() {
+  if (input.buttonIsPressed(Button.A)) {
+    speed += 10
+    if (speed > maxSpeed) {
+      speed = maxSpeed
+    }
+  }
+  if (input.buttonIsPressed(Button.B)) {
+    speed -= 10
+    if (speed < 0) {
+      speed = 0
+    }
+  }
+  basic.showNumber(speed)
+})</pre>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="inline-block bg-black p-4 rounded-lg mb-3">
+                                    <div class="micro-bit-grid" id="microbitDisplay">
+                                        <!-- Generated by JS -->
+                                    </div>
+                                </div>
+                                <p class="text-white orbitron">數字顯示: <span id="speedDisplay">75</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Page 2 Content -->
+        <div id="page2" class="page-content hidden">
+            <!-- Page 2 Hero Section -->
+            <section class="py-12">
+                <div class="text-center mb-8">
+                    <h2 class="orbitron text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-stemblue-900 dark:text-white">
+                        <span class="text-neongreen-400 glow">設計挑戰</span> 開始！
+                    </h2>
+                    <p class="text-xl mb-8">準備好用 Canva 設計出驚艷的 Micro-X 賽車宣傳貼文了嗎？</p>
+                    <a href="https://www.canva.com" target="_blank" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105">
+                        <i class="fas fa-external-link-alt mr-3"></i>
+                        前往 Canva 開始設計
+                    </a>
+                </div>
+            </section>
+
+            <!-- Challenge Section -->
+            <section id="challenge" class="py-12 border-t border-gray-200 dark:border-stemblue-700">
+                <h2 class="orbitron text-3xl font-bold mb-8 text-center text-stemblue-900 dark:text-white">
+                    <span class="text-neongreen-400">設計挑戰</span> 內容
+                </h2>
+                <div class="bg-gray-100 dark:bg-stemblue-800 rounded-xl p-6 shadow-lg">
+                    <div class="mb-8">
+                        <h3 class="orbitron text-xl font-bold mb-4">任務背景</h3>
+                        <p class="mb-4">你是 STEMbit Racers 的實習工程師兼設計師！為了推廣我們最新的「Micro-X」智慧賽車，你的任務是用 Canva 設計一個 Instagram 宣傳貼文，吸引年輕科技迷與賽車愛好者。</p>
+                        <p>這款賽車搭載 Micro:bit 可編程控制系統，能讓車手自訂 AI 駕駛模式、即時數據監測，甚至用程式碼調整賽車性能！我們需要你的創意來展示這款「程式控製的極速機器」的魅力！</p>
+                    </div>
+
+                    <div class="mb-8">
+                        <h3 class="orbitron text-xl font-bold mb-4">任務目標</h3>
+                        <ul class="space-y-3 list-disc list-inside">
+                            <li>設計 Instagram 貼文（比例 1:1 或 4:5），符合 STEMbit Racers 的品牌色（深藍、螢光綠、金屬灰）。</li>
+                            <li>強調 Micro-X 的三大創新賣點：
+                                <ul class="ml-6 mt-2 space-y-2 list-inside">
+                                    <li>🔧 Micro:bit 即時編程控制賽車性能</li>
+                                    <li>📊 內建 STEM 數據監測（速度、能耗、G力）</li>
+                                    <li>🚀 模組化設計，可升級感測器與動力系統</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Design Guidelines -->
+            <section id="guidelines" class="py-12 border-t border-gray-200 dark:border-stemblue-700">
+                <h2 class="orbitron text-3xl font-bold mb-8 text-center text-stemblue-900 dark:text-white">
+                    <span class="text-neongreen-400">設計</span> 指南
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-gray-100 dark:bg-stemblue-800 rounded-xl p-6 shadow-lg">
+                        <h3 class="orbitron text-xl font-bold mb-4">必備元素</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="text-neongreen-400 text-xl mt-1 mr-3">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">主視覺</h4>
+                                    <p class="text-sm">用 Canva 的科技/賽車模板，或設計虛擬的 Micro-X 賽車（可加入 Micro:bit 螢幕顯示程式碼的細節）。</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="text-neongreen-400 text-xl mt-1 mr-3">
+                                    <i class="fas fa-quote-right"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">創意標語</h4>
+                                    <p class="text-sm">例如：<br>
+                                    「寫程式，飆極速！ #CodingMeetsRacing」<br>
+                                    「你的程式碼，就是賽車的靈魂！💻⚡」</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="text-neongreen-400 text-xl mt-1 mr-3">
+                                    <i class="fas fa-poll"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">互動設計</h4>
+                                    <p class="text-sm">加入 Poll 投票（「你想用 Micro:bit 控制賽車的哪個功能？」）<br>
+                                    Hashtag 挑戰（#STEMbitRacer 分享你的改裝創意）</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-100 dark:bg-stemblue-800 rounded-xl p-6 shadow-lg">
+                        <h3 class="orbitron text-xl font-bold mb-4">加分挑戰</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="text-neongreen-400 text-xl mt-1 mr-3">
+                                    <i class="fas fa-film"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">動畫效果</h4>
+                                    <p class="text-sm">用 Canva 動畫製作「程式碼跑動」或「賽車加速」的動態效果。</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="text-neongreen-400 text-xl mt-1 mr-3">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">編程小教學</h4>
+                                    <p class="text-sm">設計「Micro:bit 編程小教學」限時動態（例如：如何用簡單程式碼調整賽車燈光）。</p>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="mt-8 p-4 bg-stemblue-900 rounded-lg">
+                            <h3 class="orbitron text-xl font-bold mb-3 text-white">品牌配色</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-stemblue-900 rounded-md shadow-md"></div>
+                                    <span class="text-xs text-white mt-1">深藍色</span>
+                                    <span class="text-xs text-white">#0A1929</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-neongreen-400 rounded-md shadow-md"></div>
+                                    <span class="text-xs text-white mt-1">螢光綠</span>
+                                    <span class="text-xs text-white">#39FF14</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-metalgray-500 rounded-md shadow-md"></div>
+                                    <span class="text-xs text-white mt-1">金屬灰</span>
+                                    <span class="text-xs text-white">#808080</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Discussion Section -->
+            <section id="discussion" class="py-12 border-t border-gray-200 dark:border-stemblue-700">
+                <h2 class="orbitron text-3xl font-bold mb-8 text-center text-stemblue-900 dark:text-white">
+                    <span class="text-neongreen-400">教學引導</span> 問題
+                </h2>
+                <div class="bg-gray-100 dark:bg-stemblue-800 rounded-xl p-6 shadow-lg">
+                    <ul class="space-y-6">
+                        <li class="p-4 bg-white dark:bg-stemblue-700 rounded-lg shadow-md">
+                            <h3 class="orbitron text-lg font-bold mb-2">1. 如何用設計呈現「STEM + 賽車」的跨界創新？</h3>
+                            <p class="text-sm">思考如何在視覺設計中平衡科技感與速度感，讓兩者相輔相成而非互相衝突。</p>
+                        </li>
+                        <li class="p-4 bg-white dark:bg-stemblue-700 rounded-lg shadow-md">
+                            <h3 class="orbitron text-lg font-bold mb-2">2. 若目標客群是「學生」，哪些視覺元素會更吸引他們？</h3>
+                            <p class="text-sm">探討程式碼、數據圖表等元素如何融入設計，既能展示產品特點，又能吸引年輕受眾。</p>
+                        </li>
+                        <li class="p-4 bg-white dark:bg-stemblue-700 rounded-lg shadow-md">
+                            <h3 class="orbitron text-lg font-bold mb-2">3. 靜態貼文 vs. 動態貼文，哪種更適合推廣科技產品？</h3>
+                            <p class="text-sm">分析不同形式的內容在社交媒體上的優劣勢，以及如何選擇最適合展示科技產品特性的形式。</p>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Canva Action Section -->
+            <section class="py-12 border-t border-gray-200 dark:border-stemblue-700">
+                <div class="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-xl p-8 text-center shadow-lg">
+                    <h2 class="orbitron text-3xl font-bold mb-4 text-stemblue-900 dark:text-white">準備好開始設計了嗎？</h2>
+                    <p class="text-lg mb-6 text-gray-700 dark:text-gray-300">點擊下方按鈕，前往 Canva 開始你的創意設計之旅！</p>
+                    <a href="https://www.canva.com" target="_blank" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105 text-lg">
+                        <i class="fas fa-palette mr-3"></i>
+                        立即前往 Canva 設計
+                        <i class="fas fa-external-link-alt ml-3"></i>
+                    </a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="bg-stemblue-900 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <h2 class="orbitron text-2xl font-bold">
+                        <span class="text-neongreen-400">STEM</span>bit Racers
+                    </h2>
+                    <p class="text-sm mt-2 text-gray-400">結合 STEM 教育與賽車運動的創新公司</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-stemblue-800 flex items-center justify-center hover:bg-neongreen-400 hover:text-stemblue-900 transition-colors">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-stemblue-800 flex items-center justify-center hover:bg-neongreen-400 hover:text-stemblue-900 transition-colors">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-stemblue-800 flex items-center justify-center hover:bg-neongreen-400 hover:text-stemblue-900 transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-stemblue-800 flex items-center justify-center hover:bg-neongreen-400 hover:text-stemblue-900 transition-colors">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-8 pt-6 border-t border-stemblue-800 text-center text-sm text-gray-400">
+                <p>© 2023 STEMbit Racers. 保留所有權利。</p>
+                <p class="mt-2">此網站為 STEMbit Racers 設計挑戰專用網站，僅作教育用途。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Page navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.add('hidden');
+            });
+
+            // Show selected page
+            document.getElementById(pageId).classList.remove('hidden');
+
+            // Update navigation visibility
+            const page1Elements = document.querySelectorAll('.page1-only');
+            if (pageId === 'page1') {
+                page1Elements.forEach(el => el.style.display = '');
+            } else {
+                page1Elements.forEach(el => el.style.display = 'none');
+            }
+
+            // Close mobile menu
+            mobileMenu.classList.add('hidden');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Micro:bit LED displays
+        function createMicrobitDisplay(elementId) {
+            const grid = document.getElementById(elementId);
+            if (!grid) return;
+
+            grid.innerHTML = '';
+            for (let i = 0; i < 25; i++) {
+                const led = document.createElement('div');
+                led.className = 'micro-bit-led';
+                grid.appendChild(led);
+            }
+        }
+
+        createMicrobitDisplay('microbitGrid');
+        createMicrobitDisplay('microbitDisplay');
+
+        // Animate Micro:bit display for speed
+        function animateMicrobitDisplay() {
+            const display = document.getElementById('microbitDisplay');
+            if (!display) return;
+
+            const leds = display.querySelectorAll('.micro-bit-led');
+
+            // Clear all LEDs
+            leds.forEach(led => led.classList.remove('active'));
+
+            // Get current speed display
+            const speedDisplay = document.getElementById('speedDisplay');
+            let speed = parseInt(speedDisplay.textContent);
+
+            // Speed pattern (showing a number on the micro:bit)
+            let pattern;
+            if (speed <= 25) {
+                pattern = [6, 7, 8, 11, 13, 16, 17, 18];  // 1
+            } else if (speed <= 50) {
+                pattern = [6, 7, 8, 13, 16, 17, 18, 11, 12];  // 2
+            } else if (speed <= 75) {
+                pattern = [6, 7, 8, 13, 16, 17, 18, 12, 13];  // 3
+            } else {
+                pattern = [6, 8, 11, 12, 13, 16, 17, 18];  // 4
+            }
+
+            // Activate pattern LEDs
+            pattern.forEach(idx => {
+                if (idx < leds.length) {
+                    leds[idx].classList.add('active');
+                }
+            });
+
+            // Randomly change speed for animation effect
+            setTimeout(() => {
+                speed = Math.floor(Math.random() * 100);
+                speedDisplay.textContent = speed;
+                animateMicrobitDisplay();
+            }, 2000);
+        }
+
+        // Animate microbit grid on hero section
+        function animateHeroMicrobit() {
+            const grid = document.getElementById('microbitGrid');
+            if (!grid) return;
+
+            const leds = grid.querySelectorAll('.micro-bit-led');
+
+            // Clear all LEDs
+            leds.forEach(led => led.classList.remove('active'));
+
+            // Random pattern
+            const numActive = 5 + Math.floor(Math.random() * 5);
+            const positions = [];
+
+            while (positions.length < numActive) {
+                const pos = Math.floor(Math.random() * 25);
+                if (!positions.includes(pos)) {
+                    positions.push(pos);
+                }
+            }
+
+            // Activate random LEDs
+            positions.forEach(pos => {
+                leds[pos].classList.add('active');
+            });
+
+            setTimeout(animateHeroMicrobit, 800);
+        }
+
+        // Start animations
+        animateMicrobitDisplay();
+        animateHeroMicrobit();
+
+        // Smooth scrolling for anchor links (only for page 1)
+        document.querySelectorAll('a[href^="#"]:not([onclick])').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement && !document.getElementById('page1').classList.contains('hidden')) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // Initialize page 1 as default
+        showPage('page1');
+    </script>
+</body>
+</html>
